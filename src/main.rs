@@ -42,6 +42,13 @@ pub fn main() -> Result<(), std::io::Error> {
                 .takes_value(true)
                 .required(true),
         )
+        .arg(
+            Arg::with_name("best")
+                .long("best")
+                .about("Pass this flag to take the best hits for each marker only.")
+                .takes_value(false)
+                .required(false),
+        )
         .get_matches();
 
     let mut hitmap = HashMap::new();
@@ -56,10 +63,18 @@ pub fn main() -> Result<(), std::io::Error> {
         .unwrap();
 
     let paths = file_list(&domtbls, "domtbl").unwrap();
-    let hits: Vec<(&std::path::PathBuf, Hits)> = paths
+    let mut hits: Vec<(&std::path::PathBuf, Hits)> = paths
         .iter()
         .map(|p| (p, parse_and_filter(p).unwrap()))
         .collect();
+
+    if args.occurrences_of("best") != 0 {
+        println!("Doing best");
+        for (_p, h) in hits.iter_mut() {
+            h.best_filter();
+        }
+        //hits.iter_mut().map(|(_p, h)| h.best_filter());
+    }
 
     for h in hits {
         hitmap.insert(h.0, h.1);
@@ -164,6 +179,12 @@ pub struct Hits {
     n_markers: usize,
 }
 impl Hits {
+    pub fn new() -> Hits {
+        Hits {
+            inner: MultiMap::new(),
+            n_markers: 0,
+        }
+    }
     pub fn from_file<P: AsRef<Path>>(_path: P) {
         ()
     }
@@ -185,6 +206,12 @@ impl Hits {
         }
         let perc_duplicated = count / (self.inner.len() as f64);
         perc_duplicated
+    }
+    pub fn best_filter(&mut self) {
+        for (_marker, hitlist) in self.inner.iter_all_mut() {
+            hitlist.sort_by(|a, b| a.fs_score.partial_cmp(&b.fs_score).unwrap());
+            hitlist.truncate(1);
+        }
     }
 }
 
@@ -263,7 +290,7 @@ fn has_enough_occupants(
         }
     }
     let mark_occ = i / n_taxa;
-    println!("{}", mark_occ);
+    //println!("{}", mark_occ);
     if mark_occ <= proportion {
         return false;
     }
