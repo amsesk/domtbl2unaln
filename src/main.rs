@@ -91,7 +91,10 @@ pub fn main() -> Result<(), std::io::Error> {
     let odb10_marker_cutoffs = parse_cutoffs(domtbl2unaln::ODB10_CUTOFFS);
 
     let mut index_reader = bio::io::fasta::IndexedReader::from_file(&proteins).unwrap();
-    println!("{}", all_hits.len());
+    println!(
+        "There are {} domtbls (and species) in this dataset.",
+        all_hits.len()
+    );
     for m in odb10_marker_cutoffs.keys() {
         if !has_enough_occupants(&m, &all_hits, 0.75, all_hits.len() as f64) {
             continue;
