@@ -1,9 +1,11 @@
 pub mod hits;
 use crate::hits::{Hit, Hits};
+use csv::WriterBuilder;
 use lazy_static::lazy_static;
 use multimap::MultiMap;
 use std::collections::HashMap;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -56,7 +58,7 @@ pub fn parse_cutoffs(cutoffs: &'static str) -> HashMap<&'static str, f64> {
 }
 
 //pub fn parse_and_filter() -> Result<MultiMap<String, Hit>, std::io::Error> {
-pub fn parse_and_filter(domtbl_path: PathBuf) -> Result<Hits, std::io::Error> {
+pub fn parse_and_filter(domtbl_path: PathBuf, busco_filter: bool) -> Result<Hits, std::io::Error> {
     println!("Parsing {}...", &domtbl_path.to_str().unwrap());
     let domtbl = File::open(&domtbl_path)?;
     let domtbl = BufReader::new(domtbl);
@@ -80,12 +82,50 @@ pub fn parse_and_filter(domtbl_path: PathBuf) -> Result<Hits, std::io::Error> {
 
     let odb10_cutoffs = parse_cutoffs(ODB10_CUTOFFS);
 
-    let mut filt = filter_by_score(&odb10_cutoffs, markerhits);
+    if busco_filter {
+        markerhits = filter_by_score(&odb10_cutoffs, markerhits);
+    }
 
-    dedup_hits(&mut filt);
+    calculate_aln_length(&markerhits);
 
-    let ret = Hits::new(domtbl_path.into_os_string().into_string().unwrap(), filt);
+    dedup_hits(&mut markerhits);
+
+    let ret = Hits::new(
+        domtbl_path.into_os_string().into_string().unwrap(),
+        markerhits,
+    );
     Ok(ret)
+}
+
+pub fn calculate_aln_length(markerhits: &MultiMap<String, Hit>) {
+    let mut aln_lengths = MultiMap::new();
+    for (marker, hits) in markerhits.iter_all() {
+        for hit in hits {
+            aln_lengths.insert((marker.to_owned(), hit.target.to_owned()), hit.aln_len)
+        }
+    }
+    for (_key, lens) in aln_lengths.iter_all_mut() {
+        let sum: i64 = lens.iter().sum();
+        *lens = vec![sum];
+    }
+
+    let handle = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .append(true)
+        .open("/home/aimzez/DATA/phylogeny/aln_lengths.csv")
+        .unwrap();
+
+    let mut wtr = WriterBuilder::new().delimiter(b'\t').from_writer(handle);
+    for (key, len) in aln_lengths.iter() {
+        wtr.write_record(&[
+            &format!("{}", key.0),
+            &format!("{}", key.1),
+            &format!("{}", len),
+        ])
+        .unwrap();
+    }
 }
 
 pub fn filter_by_score(
@@ -122,7 +162,7 @@ lazy_static! {
         let mut map = HashMap::new();
         map.insert("target_name", 0);
         map.insert("target_accession", 1);
-        map.insert("target_tlen", 2);
+        map.insert("tlen", 2);
         map.insert("query_name", 3);
         map.insert("query_accession", 4);
         map.insert("qlen", 5);
@@ -135,15 +175,14 @@ lazy_static! {
         map.insert("dom_ievalue", 12);
         map.insert("dom_score", 13);
         map.insert("dom_bias", 14);
-        map.insert("dom_id", 15);
-        map.insert("hmm_from", 16);
-        map.insert("hmm_to", 17);
-        map.insert("ali_from", 18);
-        map.insert("ali_to", 19);
-        map.insert("env_from", 20);
-        map.insert("env_to", 21);
-        map.insert("acc", 22);
-        map.insert("target_description", 23);
+        map.insert("hmm_from", 15);
+        map.insert("hmm_to", 16);
+        map.insert("ali_from", 17);
+        map.insert("ali_to", 18);
+        map.insert("env_from", 19);
+        map.insert("env_to", 20);
+        map.insert("acc", 21);
+        map.insert("target_description", 22);
 
         map
     };

@@ -46,6 +46,13 @@ pub fn main() -> Result<(), std::io::Error> {
                 .takes_value(false)
                 .required(false),
         )
+        .arg(
+            Arg::with_name("busco")
+                .long("busco")
+                .about("Pass this flag to filter marker hits by the BUSCO odb10 cutoffs.")
+                .takes_value(false)
+                .required(false),
+        )
         .get_matches();
 
     // Unwrap on None here is impossible because
@@ -56,11 +63,16 @@ pub fn main() -> Result<(), std::io::Error> {
     let outdir = Path::new(args.value_of("outdir").unwrap())
         .canonicalize()
         .unwrap();
+    let mut busco_filt = false;
+    if args.occurrences_of("busco") != 0 {
+        println!("Filtering by BUSCO odb10 cutoffs");
+        busco_filt = true;
+    }
 
     let paths = file_list(&domtbls, "domtbl").unwrap();
     let mut all_hits: Vec<Hits> = paths
         .into_iter()
-        .map(|p| parse_and_filter(p).unwrap())
+        .map(|p| parse_and_filter(p, busco_filt).unwrap())
         .collect();
 
     // Write reports to csv
@@ -69,12 +81,12 @@ pub fn main() -> Result<(), std::io::Error> {
         .write(true)
         .create(true)
         .truncate(true)
-        .open("/home/aimzez/DATA/phylogeny/hit_report_all.csv")?;
+        .open("/home/aimzez/DATA/phylogeny/hit_report_all.tsv")?;
     let recovery_handle = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
-        .open("/home/aimzez/DATA/phylogeny/marker_recovery.csv")?;
+        .open("/home/aimzez/DATA/phylogeny/marker_recovery.tsv")?;
     for hits in all_hits.iter() {
         hits.hit_report_csv(&report_handle)?;
         hits.recovery_csv(&recovery_handle)?;

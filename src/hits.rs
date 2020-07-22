@@ -78,17 +78,21 @@ impl Hits {
 // Struct for each hit that holds
 // important columns as well as a
 // vector of all of the columns
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Hit {
     pub target: String,
     pub query: String,
     pub fs_evalue: f64,
     pub fs_score: f64,
+    pub aln_len: i64,
     pub inner: Vec<String>,
 }
 
 impl Hit {
     pub fn new(spl: Vec<String>) -> Hit {
+        let ali_from = spl[DOMTBL_COLUMNS["ali_from"]].parse::<i64>().unwrap();
+        let ali_to = spl[DOMTBL_COLUMNS["ali_to"]].parse::<i64>().unwrap();
+        let aln_len = ali_to - ali_from;
         Hit {
             target: spl[DOMTBL_COLUMNS["target_name"]].to_owned(),
             query: spl[DOMTBL_COLUMNS["query_name"]].to_owned(),
@@ -100,6 +104,7 @@ impl Hit {
                 .to_owned()
                 .parse::<f64>()
                 .expect("Could not convert fs_score to f64"),
+            aln_len: aln_len,
             inner: spl,
         }
     }
