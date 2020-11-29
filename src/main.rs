@@ -16,7 +16,7 @@ pub fn main() -> Result<(), std::io::Error> {
         .author("Kevin Amses")
         .about("Reads and parses domtbl from hmmsearch.")
         .arg(
-            Arg::with_name("domtbls")
+            Arg::new("domtbls")
                 .long("domtbls")
                 .value_name("DIR")
                 .about("Path to directory containing domtbls.")
@@ -24,7 +24,7 @@ pub fn main() -> Result<(), std::io::Error> {
                 .required(true),
         )
         .arg(
-            Arg::with_name("proteins")
+            Arg::new("proteins")
                 .long("proteins")
                 .value_name("DIR")
                 .about("A protein fasta including predictions for ALL taxa, with samtools faidx.")
@@ -32,7 +32,7 @@ pub fn main() -> Result<(), std::io::Error> {
                 .required(true),
         )
         .arg(
-            Arg::with_name("outdir")
+            Arg::new("outdir")
                 .long("outdir")
                 .value_name("DIR")
                 .about("Path to existing directory to dump unaligned fastas.")
@@ -40,14 +40,14 @@ pub fn main() -> Result<(), std::io::Error> {
                 .required(true),
         )
         .arg(
-            Arg::with_name("best")
+            Arg::new("best")
                 .long("best")
                 .about("Pass this flag to take the best hits for each marker only.")
                 .takes_value(false)
                 .required(false),
         )
         .arg(
-            Arg::with_name("cutoffs")
+            Arg::new("cutoffs")
                 .long("cutoffs")
                 .about("Path to busco cutoffs file.")
                 .takes_value(true)
