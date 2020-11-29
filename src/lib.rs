@@ -58,7 +58,12 @@ pub fn parse_cutoffs(cutoffs: &'static str) -> HashMap<&'static str, f64> {
 }
 
 //pub fn parse_and_filter() -> Result<MultiMap<String, Hit>, std::io::Error> {
-pub fn parse_and_filter(domtbl_path: PathBuf, busco_filter: bool) -> Result<Hits, std::io::Error> {
+pub fn parse_and_filter(
+    domtbl_path: PathBuf,
+    busco_filter: bool,
+    cutoffs: &'static str,
+    outdir: &Path,
+) -> Result<Hits, std::io::Error> {
     println!("Parsing {}...", &domtbl_path.to_str().unwrap());
     let domtbl = File::open(&domtbl_path)?;
     let domtbl = BufReader::new(domtbl);
@@ -80,13 +85,13 @@ pub fn parse_and_filter(domtbl_path: PathBuf, busco_filter: bool) -> Result<Hits
         markerhits.insert(String::from(&thishit.query), thishit);
     }
 
-    let odb10_cutoffs = parse_cutoffs(ODB10_CUTOFFS);
+    let odb10_cutoffs = parse_cutoffs(cutoffs);
 
     if busco_filter {
         markerhits = filter_by_score(&odb10_cutoffs, markerhits);
     }
 
-    calculate_aln_length(&markerhits);
+    calculate_aln_length(&markerhits, outdir);
 
     dedup_hits(&mut markerhits);
 
@@ -97,7 +102,7 @@ pub fn parse_and_filter(domtbl_path: PathBuf, busco_filter: bool) -> Result<Hits
     Ok(ret)
 }
 
-pub fn calculate_aln_length(markerhits: &MultiMap<String, Hit>) {
+pub fn calculate_aln_length(markerhits: &MultiMap<String, Hit>, outdir: &Path) {
     let mut aln_lengths = MultiMap::new();
     for (marker, hits) in markerhits.iter_all() {
         for hit in hits {
@@ -108,13 +113,13 @@ pub fn calculate_aln_length(markerhits: &MultiMap<String, Hit>) {
         let sum: i64 = lens.iter().sum();
         *lens = vec![sum];
     }
-
+    println!("{:?}", outdir);
     let handle = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(false)
         .append(true)
-        .open("/home/aimzez/DATA/phylogeny/aln_lengths.csv")
+        .open(outdir.join(Path::new("aln_length.csv")))
         .unwrap();
 
     let mut wtr = WriterBuilder::new().delimiter(b'\t').from_writer(handle);
@@ -155,7 +160,8 @@ pub fn dedup_hits(hits: &mut MultiMap<String, Hit>) {
     }
 }
 
-pub static ODB10_CUTOFFS: &str = include_str!("../lib/odb10_scores_cutoff");
+pub static FUNGI_ODB10_CUTOFFS: &str = include_str!("../lib/fungi_odb10_scores_cutoff");
+pub static MOLLICUTES_ODB10_CUTOFFS: &str = include_str!("../lib/mollicutes_odb10_scores_cutoff");
 
 lazy_static! {
     static ref DOMTBL_COLUMNS: HashMap<&'static str, usize> = {

@@ -47,10 +47,10 @@ pub fn main() -> Result<(), std::io::Error> {
                 .required(false),
         )
         .arg(
-            Arg::with_name("busco")
-                .long("busco")
-                .about("Pass this flag to filter marker hits by the BUSCO odb10 cutoffs.")
-                .takes_value(false)
+            Arg::with_name("cutoffs")
+                .long("cutoffs")
+                .about("Path to busco cutoffs file.")
+                .takes_value(true)
                 .required(false),
         )
         .get_matches();
@@ -59,20 +59,32 @@ pub fn main() -> Result<(), std::io::Error> {
     // clap will have already killed the process
     // since a required argument is missing
     let domtbls = Path::new(args.value_of("domtbls").unwrap());
-    let proteins = Path::new(args.value_of("proteins").unwrap());
+    let proteins = Path::new(args.value_of("proteins").unwrap())
+        .canonicalize()
+        .unwrap();
     let outdir = Path::new(args.value_of("outdir").unwrap())
         .canonicalize()
         .unwrap();
-    let mut busco_filt = false;
-    if args.occurrences_of("busco") != 0 {
-        println!("Filtering by BUSCO odb10 cutoffs");
-        busco_filt = true;
-    }
+
+    let busco_filt;
+    let mut cutoffs = domtbl2unaln::FUNGI_ODB10_CUTOFFS;
+    match args.value_of("cutoffs") {
+        Some(c) => {
+            match c {
+                "fungi" => (),
+                "mollicutes" => cutoffs = domtbl2unaln::MOLLICUTES_ODB10_CUTOFFS,
+                _ => panic!(),
+            }
+            println!("Filtering by BUSCO odb10 cutoffs");
+            busco_filt = true;
+        }
+        None => busco_filt = false,
+    };
 
     let paths = file_list(&domtbls, "domtbl").unwrap();
     let mut all_hits: Vec<Hits> = paths
         .into_iter()
-        .map(|p| parse_and_filter(p, busco_filt).unwrap())
+        .map(|p| parse_and_filter(p, busco_filt, cutoffs, &outdir).unwrap())
         .collect();
 
     // Write reports to csv
@@ -81,12 +93,12 @@ pub fn main() -> Result<(), std::io::Error> {
         .write(true)
         .create(true)
         .truncate(true)
-        .open("/home/aimzez/DATA/phylogeny/hit_report_all.tsv")?;
+        .open(outdir.join(Path::new("hit_report_all.tsv")))?;
     let recovery_handle = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
-        .open("/home/aimzez/DATA/phylogeny/marker_recovery.tsv")?;
+        .open(outdir.join(Path::new("marker_recovery.tsv")))?;
     for hits in all_hits.iter() {
         hits.hit_report_csv(&report_handle)?;
         hits.recovery_csv(&recovery_handle)?;
@@ -100,7 +112,7 @@ pub fn main() -> Result<(), std::io::Error> {
         //hits.iter_mut().map(|(_p, h)| h.best_filter());
     }
 
-    let odb10_marker_cutoffs = parse_cutoffs(domtbl2unaln::ODB10_CUTOFFS);
+    let odb10_marker_cutoffs = parse_cutoffs(cutoffs);
 
     let mut index_reader = bio::io::fasta::IndexedReader::from_file(&proteins).unwrap();
     println!(
