@@ -73,6 +73,7 @@ pub fn main() -> Result<(), std::io::Error> {
             match c {
                 "fungi" => (),
                 "mollicutes" => cutoffs = domtbl2unaln::MOLLICUTES_ODB10_CUTOFFS,
+                "burkholdariales" => cutoffs = domtbl2unaln::BURKHOLDARIALES_ODB10_CUTOFFS,
                 _ => panic!(),
             }
             println!("Filtering by BUSCO odb10 cutoffs");
