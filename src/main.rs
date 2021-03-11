@@ -53,6 +53,14 @@ pub fn main() -> Result<(), std::io::Error> {
                 .takes_value(true)
                 .required(false),
         )
+        .arg(
+            Arg::new("occupancy_cutoff")
+                .long("occupancy_cutoff")
+                .about("Marker occupancy cutoff for not printing unaln. Default = 0.75")
+                .default_value("0.75")
+                .takes_value(true)
+                .required(false),
+        )
         .get_matches();
 
     // Unwrap on None here is impossible because
@@ -65,6 +73,7 @@ pub fn main() -> Result<(), std::io::Error> {
     let outdir = Path::new(args.value_of("outdir").unwrap())
         .canonicalize()
         .unwrap();
+    let occ_cutoff: f64 = args.value_of("occupancy_cutoff").unwrap().parse().unwrap();
 
     let busco_filt;
     let mut cutoffs = domtbl2unaln::FUNGI_ODB10_CUTOFFS;
@@ -73,7 +82,7 @@ pub fn main() -> Result<(), std::io::Error> {
             match c {
                 "fungi" => (),
                 "mollicutes" => cutoffs = domtbl2unaln::MOLLICUTES_ODB10_CUTOFFS,
-                "burkholdariales" => cutoffs = domtbl2unaln::BURKHOLDARIALES_ODB10_CUTOFFS,
+                "burkholderiales" => cutoffs = domtbl2unaln::BURKHOLDERIALES_ODB10_CUTOFFS,
                 _ => panic!(),
             }
             println!("Filtering by BUSCO odb10 cutoffs");
@@ -121,7 +130,7 @@ pub fn main() -> Result<(), std::io::Error> {
         all_hits.len()
     );
     for m in odb10_marker_cutoffs.keys() {
-        if !has_enough_occupants(&m, &all_hits, 0.75, all_hits.len() as f64) {
+        if !has_enough_occupants(&m, &all_hits, occ_cutoff, all_hits.len() as f64) {
             continue;
         }
         let mut marker_fname = String::from(*m);
