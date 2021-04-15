@@ -83,6 +83,7 @@ pub fn main() -> Result<(), std::io::Error> {
                 "fungi" => (),
                 "mollicutes" => cutoffs = domtbl2unaln::MOLLICUTES_ODB10_CUTOFFS,
                 "burkholderiales" => cutoffs = domtbl2unaln::BURKHOLDERIALES_ODB10_CUTOFFS,
+                "jgi434" => cutoffs = domtbl2unaln::JGI434_ODB10_CUTOFFS,
                 _ => panic!(),
             }
             println!("Filtering by BUSCO odb10 cutoffs");
