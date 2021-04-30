@@ -39,7 +39,7 @@ pub fn has_enough_occupants(
     }
     let mark_occ = i / n_taxa;
     //println!("{}", mark_occ);
-    if mark_occ <= proportion {
+    if mark_occ < proportion {
         return false;
     }
     true
