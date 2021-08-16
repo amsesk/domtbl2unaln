@@ -84,7 +84,8 @@ pub fn main() -> Result<(), std::io::Error> {
                 "mollicutes" => cutoffs = domtbl2unaln::MOLLICUTES_ODB10_CUTOFFS,
                 "burkholderiales" => cutoffs = domtbl2unaln::BURKHOLDERIALES_ODB10_CUTOFFS,
                 "jgi434" => cutoffs = domtbl2unaln::JGI434_ODB10_CUTOFFS,
-                _ => panic!(),
+                "mucorales" => cutoffs = domtbl2unaln::MUCORALES_ODB10_CUTOFFS,
+                _ => panic!("You selected cutoffs that don't exist."),
             }
             println!("Filtering by BUSCO odb10 cutoffs");
             busco_filt = true;

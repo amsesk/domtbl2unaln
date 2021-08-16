@@ -165,6 +165,7 @@ pub static MOLLICUTES_ODB10_CUTOFFS: &str = include_str!("../lib/mollicutes_odb1
 pub static BURKHOLDERIALES_ODB10_CUTOFFS: &str =
     include_str!("../lib/burkholderiales_odb10_scores_cutoff");
 pub static JGI434_ODB10_CUTOFFS: &str = include_str!("../lib/jgi434_scores_cutoff");
+pub static MUCORALES_ODB10_CUTOFFS: &str = include_str!("../lib/mucorales_odb10_scores_cutoff");
 
 lazy_static! {
     static ref DOMTBL_COLUMNS: HashMap<&'static str, usize> = {
