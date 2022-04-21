@@ -3,9 +3,10 @@ use bio::utils::Text;
 use clap::{App, Arg};
 use domtbl2unaln::hits::Hits;
 use domtbl2unaln::{file_list, has_enough_occupants, parse_and_filter, parse_cutoffs};
+use std::boxed::Box;
 use std::fs::OpenOptions;
 
-use std::fs::{copy, File};
+use std::fs::{read_to_string, File};
 
 use std::io::BufWriter;
 use std::io::Write;
@@ -90,11 +91,13 @@ pub fn main() -> Result<(), std::io::Error> {
                     let mpath = Path::new(&c).canonicalize().unwrap();
                     match mpath.exists() {
                         true => {
-                            let dest = "../lib/custom_cutoffs";
-                            println!("{:?} | {:?}", &mpath, &dest);
-                            copy(&mpath, &dest).unwrap();
-                            pub static CUSTOM_CUTOFFS: &str = include_str!("../lib/custom_cutoffs");
-                            cutoffs = CUSTOM_CUTOFFS
+                            //let dest = "../lib/custom_cutoffs";
+                            //println!("{:?} | {:?}", &mpath, &dest);
+                            //copy(&mpath, &dest).unwrap();
+                            //pub static CUSTOM_CUTOFFS: &str = include_str!("../lib/custom_cutoffs");
+                            //cutoffs = CUSTOM_CUTOFFS
+                            let cust = read_to_string(&mpath).unwrap();
+                            cutoffs = Box::leak(cust.into_boxed_str());
                         }
                         false => panic!("You selected cutoffs that don't exist."),
                     };
