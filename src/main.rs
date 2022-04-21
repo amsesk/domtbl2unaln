@@ -91,6 +91,7 @@ pub fn main() -> Result<(), std::io::Error> {
                     match mpath.exists() {
                         true => {
                             let dest = "../lib/custom_cutoffs";
+                            println!("{:?} | {:?}", &mpath, &dest);
                             copy(&mpath, &dest).unwrap();
                             pub static CUSTOM_CUTOFFS: &str = include_str!("../lib/custom_cutoffs");
                             cutoffs = CUSTOM_CUTOFFS
