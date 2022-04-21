@@ -5,7 +5,8 @@ use domtbl2unaln::hits::Hits;
 use domtbl2unaln::{file_list, has_enough_occupants, parse_and_filter, parse_cutoffs};
 use std::fs::OpenOptions;
 
-use std::fs::File;
+use std::fs::{copy, File};
+
 use std::io::BufWriter;
 use std::io::Write;
 use std::path::Path;
@@ -85,7 +86,19 @@ pub fn main() -> Result<(), std::io::Error> {
                 "burkholderiales" => cutoffs = domtbl2unaln::BURKHOLDERIALES_ODB10_CUTOFFS,
                 "jgi434" => cutoffs = domtbl2unaln::JGI434_ODB10_CUTOFFS,
                 "mucorales" => cutoffs = domtbl2unaln::MUCORALES_ODB10_CUTOFFS,
-                _ => panic!("You selected cutoffs that don't exist."),
+                _ => {
+                    let mpath = Path::new(&c);
+                    match mpath.exists() {
+                        true => {
+                            let mpath = &mpath.canonicalize().unwrap();
+                            let dest = "../lib/custom_cutoffs";
+                            copy(&mpath, &dest).unwrap();
+                            pub static CUSTOM_CUTOFFS: &str = include_str!("../lib/custom_cutoffs");
+                            cutoffs = CUSTOM_CUTOFFS
+                        }
+                        false => panic!("You selected cutoffs that don't exist."),
+                    };
+                }
             }
             println!("Filtering by BUSCO odb10 cutoffs");
             busco_filt = true;
