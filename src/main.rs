@@ -141,8 +141,6 @@ pub fn main() -> Result<(), std::io::Error> {
     }
     let odb10_marker_cutoffs = parse_cutoffs(cutoffs);
 
-    println!("{:?}", odb10_marker_cutoffs);
-
     for key in odb10_marker_cutoffs.keys() {
         println!("{}", key);
     }

@@ -45,13 +45,13 @@ pub fn has_enough_occupants(
     true
 }
 
-pub fn parse_cutoffs(cutoffs: &'static str) -> HashMap<&'static str, f64> {
+pub fn parse_cutoffs<'a>(cutoffs: &'a str) -> HashMap<&'a str, f64> {
     let mut cutoffs_map = HashMap::new();
-    for line in cutoffs.split('\n').collect::<Vec<&'static str>>() {
+    for line in cutoffs.split('\n').collect::<Vec<&'a str>>() {
         if line.is_empty() {
             continue;
         }
-        let spl = line.split('\t').collect::<Vec<&'static str>>();
+        let spl = line.split('\t').collect::<Vec<&'a str>>();
         cutoffs_map.insert(spl[0], spl[1].parse::<f64>().unwrap());
     }
     cutoffs_map
@@ -86,6 +86,8 @@ pub fn parse_and_filter(
     }
 
     let odb10_cutoffs = parse_cutoffs(cutoffs);
+
+    println!("{:?}", odb10_cutoffs);
 
     if busco_filter {
         markerhits = filter_by_score(&odb10_cutoffs, markerhits);
