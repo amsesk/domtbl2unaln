@@ -87,10 +87,9 @@ pub fn main() -> Result<(), std::io::Error> {
                 "jgi434" => cutoffs = domtbl2unaln::JGI434_ODB10_CUTOFFS,
                 "mucorales" => cutoffs = domtbl2unaln::MUCORALES_ODB10_CUTOFFS,
                 _ => {
-                    let mpath = Path::new(&c);
+                    let mpath = Path::new(&c).canonicalize().unwrap();
                     match mpath.exists() {
                         true => {
-                            let mpath = &mpath.canonicalize().unwrap();
                             let dest = "../lib/custom_cutoffs";
                             copy(&mpath, &dest).unwrap();
                             pub static CUSTOM_CUTOFFS: &str = include_str!("../lib/custom_cutoffs");
