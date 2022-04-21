@@ -123,8 +123,11 @@ pub fn main() -> Result<(), std::io::Error> {
         }
         //hits.iter_mut().map(|(_p, h)| h.best_filter());
     }
-
     let odb10_marker_cutoffs = parse_cutoffs(cutoffs);
+
+    for key in odb10_marker_cutoffs.keys() {
+        println!("{}", key);
+    }
 
     let mut index_reader = bio::io::fasta::IndexedReader::from_file(&proteins).unwrap();
     println!(
