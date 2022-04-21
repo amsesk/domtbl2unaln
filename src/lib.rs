@@ -141,6 +141,7 @@ pub fn filter_by_score(
 ) -> MultiMap<String, Hit> {
     let mut new = MultiMap::new();
     for (key, values) in hits.iter_all() {
+        println!("{:?}\t{:?}", key, values);
         for val in values.iter() {
             if val.fs_score >= *cutoffs.get(&key as &str).unwrap() {
                 new.insert(String::from(key), val.to_owned());
