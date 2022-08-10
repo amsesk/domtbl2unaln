@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 bio = {git = "https://github.com/rust-bio/rust-bio"}
-clap = "3.0.0-beta.2"
+clap = "=3.0.0-beta.2"
 lazy_static = "1.4.0"
 multimap = "0.8.1"
 csv = "1.1"
