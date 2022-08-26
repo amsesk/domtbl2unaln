@@ -82,7 +82,8 @@ pub fn main() -> Result<(), std::io::Error> {
     match args.value_of("cutoffs") {
         Some(c) => {
             match c {
-                "fungi" => (),
+                "fungi" => cutoffs = domtbl2unaln::FUNGI_ODB10_CUTOFFS,
+                "bacteria" => cutoffs = domtbl2unaln::BACTERIA_ODB10_CUTOFFS,
                 "mollicutes" => cutoffs = domtbl2unaln::MOLLICUTES_ODB10_CUTOFFS,
                 "burkholderiales" => cutoffs = domtbl2unaln::BURKHOLDERIALES_ODB10_CUTOFFS,
                 "jgi434" => cutoffs = domtbl2unaln::JGI434_ODB10_CUTOFFS,
