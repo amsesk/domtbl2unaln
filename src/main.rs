@@ -87,6 +87,7 @@ pub fn main() -> Result<(), std::io::Error> {
                 "burkholderiales" => cutoffs = domtbl2unaln::BURKHOLDERIALES_ODB10_CUTOFFS,
                 "jgi434" => cutoffs = domtbl2unaln::JGI434_ODB10_CUTOFFS,
                 "mucorales" => cutoffs = domtbl2unaln::MUCORALES_ODB10_CUTOFFS,
+                "bacteria" => cutoffs = domtbl2unaln::BACTERIA_ODB10_CUTOFFS,
                 _ => {
                     let mpath = Path::new(&c).canonicalize().unwrap();
                     match mpath.exists() {
